@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Speaking Likes Game</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f0f4f8;
+  text-align: center;
+  padding: 30px;
+}
+
+.container {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  max-width: 500px;
+  margin: auto;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+button {
+  padding: 10px 15px;
+  margin: 5px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.correct { background-color: #4CAF50; color: white; }
+.wrong { background-color: #f44336; color: white; }
+.next { background-color: #2196F3; color: white; }
+.mic { background-color: #ff9800; color: white; }
+
+#score {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2 id="sentence"></h2>
+
+  <p>🎤 Say the FULL sentence</p>
+
+  <div id="score">Score: 0</div>
+
+  <button class="mic" onclick="startListening()">🎤 Speak</button>
+
+  <p id="speech"></p>
+  <p id="result"></p>
+
+  <button class="next" onclick="nextQuestion()">Next</button>
+</div>
+
+<script>
+
+const questions = [
+  "She likes watching movies.",
+  "They don't like playing basketball.",
+  "They like playing football.",
+  "He doesn't like playing videogames.",
+  "She doesn't like riding a bike.",
+  "They like painting.",
+  "He likes watching TV.",
+  "Mayleen likes playing violin.",
+  "My mom likes reading.",
+  "I like singing."
+];
+
+let current = 0;
+let score = 0;
+
+function loadQuestion() {
+  document.getElementById("sentence").innerText = questions[current];
+  document.getElementById("result").innerText = "";
+  document.getElementById("speech").innerText = "";
+}
+
+// Normalize text (remove punctuation + lowercase)
+function normalize(text) {
+  return text.toLowerCase()
+             .replace(/[.,!?]/g, "")
+             .replace(/\s+/g, " ")
+             .trim();
+}
+
+// Compare similarity (simple version)
+function isSimilar(a, b) {
+  return normalize(a) === normalize(b);
+}
+
+function startListening() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("Use Google Chrome for speaking mode.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+
+  recognition.start();
+
+  recognition.onresult = function(event) {
+    const spoken = event.results[0][0].transcript;
+    const correct = questions[current];
+
+    document.getElementById("speech").innerText = "You said: " + spoken;
+
+    if (isSimilar(spoken, correct)) {
+      document.getElementById("result").innerText = "✅ Perfect! +10 points";
+      score += 10;
+      document.getElementById("score").innerText = "Score: " + score;
+    } else {
+      document.getElementById("result").innerText =
+        "❌ Not quite. Try again!\nCorrect sentence:\n" + correct;
+    }
+  };
+}
+
+function nextQuestion() {
+  current++;
+  if (current < questions.length) {
+    loadQuestion();
+  } else {
+    document.getElementById("sentence").innerText = "🎉 Game Finished!";
+    document.getElementById("result").innerText = "Final Score: " + score;
+  }
+}
+
+loadQuestion();
+
+</script>
+
+</body>
+</html>
